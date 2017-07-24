@@ -34,11 +34,11 @@ function deploy_jar() {
   if [ "${jar}" != "" ]; then
       
       if [ "${ver}" == "" ]; then 
-        ver=$(echo "${jar}" | sed -e 's/\-/ /g' | sed -e 's/\.jar/ /g' | awk '{print $NF}')
+        ver=$(echo "${jar}" | sed 's/\(.*\)-/\1 /' | sed -e 's/\.jar/ /g' | awk '{print $NF}')
       fi
       
       if [ "${aid}" == "" ]; then 
-        aid=$(echo "${jar}" | sed -e 's/\-/ /g' | sed -e 's/\.jar/ /g' | awk '{print $1}')
+        aid=$(echo "${jar}" | sed 's/\(.*\)-/\1 /' | sed -e 's/\.jar/ /g' | awk '{print $1}')
       fi
 
       cli="mvn deploy:deploy-file -DgroupId=${gid} -DartifactId=${aid} -Dversion=${ver} -Dpackaging=jar -DgeneratePom=true -DrepositoryId=nexus-releases -Dfile=${jar} -Durl=${nexus_url}"
