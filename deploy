@@ -46,7 +46,16 @@ function run() {
     fi
 
     if [ "${jar}" != "" ]; then
-      cli="mvn deploy:deploy-file -DgroupId=${gid} -DartifactId=${aid} -Dversion=${ver} -Dpackaging=jar -Dfile=${jar} -Durl=${MAVEN_URL}"
+      
+      if [ "${ver}" == "" ]; then 
+        ver=$(echo "${jar}" | sed -e 's/\-/ /g' | sed -e 's/\.jar/ /g' | awk '{print $NF}')
+      fi
+      
+      if [ "${aid}" == "" ]; then 
+        aid=$(echo "${jar}" | sed -e 's/\-/ /g' | sed -e 's/\.jar/ /g' | awk '{print $1}')
+      fi
+
+      cli="mvn deploy:deploy-file -DgroupId=${gid} -DartifactId=${aid} -Dversion=${ver} -Dpackaging=jar -DgeneratePom=true -DrepositoryId=nexus-releases -Dfile=${jar} -Durl=${nexus_url}"
     fi
   fi
 
