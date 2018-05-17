@@ -1,0 +1,75 @@
+#!/bin/bash
+###############################################################################
+# Project: hi-cli
+# Description: The cross platform development toolkit - hi-cli
+# Author: John Deng (john.deng@outlook.com)
+#
+# Copyright (c) 2014-2017 John Deng (john.deng@outlook.com)
+#
+# Licensed under the Apache License, Version 2.0 (the License);
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: John Deng (john.deng@outlook.com)
+# Updated: Tue Feb 21 22:17:10 CST 2017
+# module: mvn
+# Action: ${action}
+# Simplify third party artifact ${action}, e.g.: hi mvn install jar gid=com.oracle aid=ojdbc14 ver=10.2.0.5.0
+###############################################################################
+
+source "${HI_CLI_HOME}/bin/colors"
+#source "${HI_CLI_HOME}/bin/clap"
+source "${HI_CLI_HOME}/bin/logging"
+###############################################################################
+function get_mvn_project_prop() {
+  file=$1
+  prop=$2
+  echo $(mvn -f ${file} org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.${prop}|grep -Ev '(^\[|Download\w+:)')
+}
+###############################################################################
+function process_jar() {
+  action="$1"
+  jar="$2"
+  if [ "${jar}" != "" ]; then
+      pom=${jar/jar/pom}
+      gid=${gid}
+      aid=${aid}
+      ver=${ver}
+      if [ -f ${pom} ]; then
+        pom_gid=$(get_mvn_project_prop ${pom} groupId)
+        if [ "${pom_gid}" != "" ]; then
+          gid=${pom_gid}
+        fi 
+
+        pom_aid=$(get_mvn_project_prop ${pom} artifactId)
+        if [ "${pom_aid}" != "" ]; then
+          aid=${pom_aid}
+        fi 
+
+        pom_ver=$(get_mvn_project_prop ${pom} version)
+        if [ "${pom_ver}" != "" ]; then
+          ver=${pom_ver}
+        fi 
+      fi 
+      if [ "${ver}" == "" ]; then 
+        ver=$(echo "${jar}" | sed 's/\(.*\)-/\1 /' | sed -e 's/\.jar/ /g' | awk '{print $NF}')
+      fi
+      
+      if [ "${aid}" == "" ]; then 
+        aid=$(echo "${jar}" | sed 's/\(.*\)-/\1 /' | sed -e 's/\.jar/ /g' | awk '{print $1}')
+      fi
+
+      cli="mvn ${action}:${action}-file -DgroupId=${gid} -DartifactId=${aid} -Dversion=${ver} -Dpackaging=jar -DgeneratePom=true -DrepositoryId=nexus-releases -Dfile=${jar} -Durl=${nexus_url}"
+    fi
+}
+###############################################################################
+
+

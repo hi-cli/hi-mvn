@@ -27,6 +27,7 @@
 source "${HI_CLI_HOME}/bin/colors"
 #source "${HI_CLI_HOME}/bin/clap"
 source "${HI_CLI_HOME}/bin/logging"
+source "${module_dir}/common"
 ###############################################################################
 function run() {
   cli="mvn install -Dmaven.test.skip=true"
@@ -44,10 +45,10 @@ function run() {
     fi
 
     if [ "${jar}" != "" ]; then
-      cli="mvn install:install-file -DgroupId=${gid} -DartifactId=${aid} -Dversion=${ver} -Dpackaging=jar -Dfile=${jar}"
+      process_jar install "${jar}"
     fi
   fi
-
+  log_debug "${cli}"
   ${cli}
 
   result=$?
